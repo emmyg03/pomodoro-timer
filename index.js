@@ -1,51 +1,81 @@
 const sparkle = new Audio('./assets/mixkit-fairy-arcade-sparkle-866.wav');
-// using querySelector() to select/update elements
-const startBtn = document.querySelector('.btn-start');
-const session = document.querySelector('.minutes');
-let myInterval;
-let state = true;   // when app running
+const timerControlBtn = document.querySelector('.btn-start'); 
+const tabs = document.querySelectorAll('.tab');
+const timerEl = document.querySelector('.timer');
+let interval;   // timer session
+let isRunning = false;
+let totalSeconds = 1500;
 
-startBtn.addEventListener("click", () => {
-    console.log("hey");
-})
+updateTimerDisplay();
 
+tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+        // accessing the mode value of the HTML tab elements (i.e. pomodoro)
+        const mode = tab.dataset.mode;
 
+        // set all tabs to inactive, then desired mode back to active
+        // by default, pomodoro session is set to active
+        tabs.forEach((tab) => tab.classList.remove('active'));
+        tab.classList.add('active');
 
-const appTimer = () => {
-    const sessionLength = Number.parseInt(session.textContent)
+        // reset timer
+        clearInterval(interval);
+        isRunning = false;
+        totalSeconds = parseInt(tab.dataset.time);
+        timerControlBtn.textContent = "Start";
 
-    // if app is running
-    if(state) {
-        state = false;
-        // convert time left to seconds
-        let totalSeconds = sessionLength * 60;
+        updateTimerDisplay();
 
-        const updateSeconds = () => {
-            const minuteDiv = document.querySelector('.minutes');
-            const secondDiv = document.querySelector('.seconds');
+    });
+});
 
+function updateTimerDisplay () {
+    let minutes = Math.floor(totalSeconds / 60);
+    let seconds = totalSeconds % 60;
+    timerEl.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+
+}
+
+function startTimer() {
+    const tabActive = document.querySelector('.tab.active');
+
+    // if it's already running, reset timer
+    if (isRunning) {
+        // current timer mode
+        const mode = tabActive.dataset.mode;
+
+        // reset
+        clearInterval(interval);
+        isRunning = false;
+        totalSeconds = tabActive.dataset.time;
+        timerControlBtn.textContent = 'Start';
+        
+        updateTimerDisplay();
+    } else {
+        // if not already running, start timer
+        isRunning = true;
+        timerControlBtn.textContent = 'Reset';
+        
+        interval = setInterval(() => {
+            let minutes = Math.floor(totalSeconds/60);
+            let seconds = totalSeconds % 60;
+
+            minutes = minutes < 10 ? "0" + minutes : minutes;
+            seconds = seconds < 10 ? "0" + seconds : seconds;
+            
             totalSeconds--;
 
-            let minutesLeft = Math.floor(totalSeconds/60);
-            let secondsLeft = totalSeconds % 60;
-
-            if (secondsLeft < 10) {
-                secondDiv.textContent = '0' + secondsLeft;
-            } else {
-                secondDiv.textContent = secondsLeft;
+            if (totalSeconds < 0) {
+                clearInterval(interval);
+                isRunning = false;
+                sparkle.play();
+                timerControlBtn.textContent = "Start";
+                totalSeconds = tabActive.dataset.time;  // reset the time back to original duration
             }
-            minuteDiv.textContent = `${minutesLeft}`;
 
-            if(minutesLeft === 0 && secondsLeft === 0) {
-                sparkle.play()
-                clearInterval(myInterval);
-            }
-        }
-        // run updateSeconds() every 1000ms
-        myInterval = setInterval(updateSeconds, 1000);
-    } else {
-        alert('Session has already started.')
+            updateTimerDisplay();
+        }, 1000);   // repeats every 1 sec
     }
 }
 
-startBtn.addEventListener('click', appTimer);
+timerControlBtn.addEventListener('click', startTimer);

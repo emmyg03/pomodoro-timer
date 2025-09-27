@@ -13,12 +13,15 @@
 <body>
     <div class="container">
         <h1>Pomodoro Timer</h1>
-        <div class="timer">
-            <p><span class="minutes">25</span>:<span class="seconds">00</span></p>
+        <div class="tabs">
+            <button class="tab active" data-mode="pomodoro" data-time="1500">Pomodoro</button>
+            <button class="tab" data-mode="short-break" data-time="300">Short Break</button>
+            <button class="tab" data-mode="long-break" data-time="900">Long Break</button>
         </div>
+        <div class="timer" id="timer">25:00</div>
         <div class="button-container">
             <button class="btn-start">start</button>
-            <button class="btn-stop">stop</button>
+            <!-- <button class="btn-stop">stop</button> -->
         </div>
     </div>
 </body>
